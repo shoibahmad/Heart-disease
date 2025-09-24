@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CardioPredict - Assessment Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c5aa0;
+            --secondary-color: #e8f4fd;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #ffffff 100%);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1e3d72 100%);
+            color: white;
+            padding: 2rem 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .patient-header {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            margin-bottom: 2rem;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .risk-indicator {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            font-size: 3rem;
+            font-weight: bold;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .risk-indicator::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.1) 75%);
+            background-size: 20px 20px;
+        }
+
+        .result-card {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            border-left: 5px solid var(--primary-color);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transform: translateY(-3px);
+        }
+
+        .data-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .table th {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 1rem;
+            font-weight: 600;
+        }
+
+        .table td {
+            padding: 1rem;
+            border-color: #f8f9fa;
+        }
+
+        .parameter-name {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .parameter-value {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1e3d72 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(44, 90, 160, 0.4);
+        }
+
+        .btn-outline-primary {
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            border-radius: 15px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .medical-icon {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .recommendation-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .timestamp {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            
+            body {
+                background: white !important;
+            }
+            
+            .card {
+                box-shadow: none !important;
+                border: 1px solid #ddd !important;
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-0">
+                        <i class="fas fa-heartbeat me-3"></i>
+                        Assessment Results
+                    </h1>
+                    <div class="patient-header">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h4 class="mb-1">
+                                    <i class="fas fa-user me-2"></i>
+                                    {{ patient_name }}
+                                </h4>
+                                <p class="mb-0 opacity-75">
+                                    <i class="fas fa-calendar me-2"></i>
+                                    Assessment Date: <span id="currentDate"></span>
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="timestamp">
+                                    Report ID: #CR{{ patient_name[:3].upper() }}{{ range(1000, 9999) | random }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end no-print">
+                    <button class="btn btn-outline-light me-2" onclick="window.print()">
+                        <i class="fas fa-print me-2"></i>Print Report
+                    </button>
+                    <button class="btn btn-light" onclick="window.location.href='/'">
+                        <i class="fas fa-plus me-2"></i>New Assessment
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container my-5">
+        <!-- Risk Assessment Result -->
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card result-card">
+                    <div class="risk-indicator pulse" style="background-color: {{ prediction_results.risk_color }};">
+                        <span>{{ (prediction_results.probability * 100) | round }}%</span>
+                    </div>
+                    <h2 class="mb-3" style="color: {{ prediction_results.risk_color }};">
+                        {{ prediction_results.risk_level }} Risk Level
+                    </h2>
+                    <p class="lead mb-4">{{ prediction_results.message }}</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-4">
+                            <div class="feature-card text-center">
+                                <i class="fas fa-percentage medical-icon"></i>
+                                <h5>Risk Probability</h5>
+                                <p class="mb-0 h4" style="color: {{ prediction_results.risk_color }};">
+                                    {{ (prediction_results.probability * 100) | round }}%
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="feature-card text-center">
+                                <i class="fas fa-shield-alt medical-icon" style="color: var(--success-color);"></i>
+                                <h5>Recommendation</h5>
+                                <p class="mb-0">
+                                    {% if prediction_results.risk_level == 'High' %}
+                                        Immediate medical consultation
+                                    {% elif prediction_results.risk_level == 'Moderate' %}
+                                        Regular monitoring needed
+                                    {% else %}
+                                        Continue healthy lifestyle
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="feature-card text-center">
+                                <i class="fas fa-calendar-check medical-icon" style="color: var(--warning-color);"></i>
+                                <h5>Next Steps</h5>
+                                <p class="mb-0">
+                                    {% if prediction_results.risk_level == 'High' %}
+                                        Schedule within 24-48 hours
+                                    {% elif prediction_results.risk_level == 'Moderate' %}
+                                        Follow up within 2 weeks
+                                    {% else %}
+                                        Annual check-up recommended
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Medical Parameters -->
+        <div class="row mt-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="card">
+                    <div class="card-header bg-white border-0 pt-4">
+                        <h3 class="text-center mb-0">
+                            <i class="fas fa-clipboard-list me-2" style="color: var(--primary-color);"></i>
+                            Detailed Medical Parameters
+                        </h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="data-table">
+                            <table class="table table-striped mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Value</th>
+                                        <th>Reference Range</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="parameter-name">Age</td>
+                                        <td class="parameter-value">{{ patient_data.age }} years</td>
+                                        <td>Adult (18-120)</td>
+                                        <td><span class="badge bg-info">Normal</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="parameter-name">Sex</td>
+                                        <td class="parameter-value">{{ 'Male' if patient_data.sex == '1' else 'Female' }}</td>
+                                        <td>-</td>
+                                        <td><span class="badge bg-info">-</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="parameter-name">Chest Pain Type</td>
+                                        <td class="parameter-value">
+                                            {% set cp_types = ['Typical Angina', 'Atypical Angina', 'Non-Anginal Pain', 'Asymptomatic'] %}
+                                            {{ cp_types[patient_data.cp | int] }}
+                                        </td>
+                                        <td>-</td>
+                                        <td>
+                                            {% if patient_data.cp | int <= 1 %}
+                                                <span class="badge bg-warning">Attention</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Good</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="parameter-name">Resting Blood Pressure</td>
+                                        <td class="parameter-value">{{ patient_data.trestbps }} mmHg</td>
+                                        <td>90-140 mmHg</td>
+                                        <td>
+                                            {% if patient_data.trestbps | int > 140 %}
+                                                <span class="badge bg-danger">High</span>
+                                            {% elif patient_data.trestbps | int < 90 %}
+                                                <span class="badge bg-warning">Low</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Normal</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="parameter-name">Cholesterol</td>
+                                        <td class="parameter-value">{{ patient_data.chol }} mg/dl</td>
+                                        <td>&lt; 200 mg/dl</td>
+                                        <td>
+                                            {% if patient_data.chol | int > 240 %}
+                                                <span class="badge bg-danger">High</span>
+                                            {% elif patient_data.chol | int > 200 %}
+                                                <span class="badge bg-warning">Borderline</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Normal</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="parameter-name">Fasting Blood Sugar</td>
+                                        <td class="parameter-value">{{ '> 120 mg/dl' if patient_data.fbs == '1' else '≤ 120 mg/dl' }}</td>
+                                        <td>≤ 120 mg/dl</td>
+                                        <td>
+                                            {% if patient_data.fbs == '1' %}
+                                                <span class="badge bg-warning">Elevated</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Normal</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="parameter-name">Resting ECG</td>
+                                        <td class="parameter-value">
+                                            {% set ecg_types = ['Normal', 'ST-T Wave Abnormality', 'Left Ventricular Hypertrophy'] %}
+                                            {{ ecg_types[patient_data.restecg | int] }}
+                                        </td>
+                                        <td>Normal</td>
+                                        <td>
+                                            {% if patient_data.restecg == '0' %}
+                                                <span class="badge bg-success">Normal</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">Abnormal</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="parameter-name">Maximum Heart Rate</td>
+                                        <td class="parameter-value">{{ patient_data.thalach }} bpm</td>
+                                        <td>60-220 bpm</td>
+                                        <td>
+                                            {% if patient_data.thalach | int < 60 %}
+                                                <span class="badge bg-warning">Low</span>
+                                            {% elif patient_data.thalach | int > 200 %}
+                                                <span class="badge bg-warning">High</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Normal</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="parameter-name">Exercise Induced Angina</td>
+                                        <td class="parameter-value">{{ 'Yes' if patient_data.exang == '1' else 'No' }}</td>
+                                        <td>No</td>
+                                        <td>
+                                            {% if patient_data.exang == '1' %}
+                                                <span class="badge bg-warning">Present</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Absent</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="parameter-name">ST Depression</td>
+                                        <td class="parameter-value">{{ patient_data.oldpeak }}</td>
+                                        <td>0-2.0</td>
+                                        <td>
+                                            {% if patient_data.oldpeak | float > 2.0 %}
+                                                <span class="badge bg-warning">Elevated</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Normal</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="parameter-name">ST Slope</td>
+                                        <td class="parameter-value">
+                                            {% set slope_types = ['Downsloping', 'Flat', 'Upsloping'] %}
+                                            {{ slope_types[patient_data.slope | int] }}
+                                        </td>
+                                        <td>Upsloping</td>
+                                        <td>
+                                            {% if patient_data.slope == '2' %}
+                                                <span class="badge bg-success">Normal</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">Abnormal</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="parameter-name">Major Vessels</td>
+                                        <td class="parameter-value">{{ patient_data.ca }}</td>
+                                        <td>0</td>
+                                        <td>
+                                            {% if patient_data.ca == '0' %}
+                                                <span class="badge bg-success">Normal</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">{{ patient_data.ca }} vessel(s)</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="parameter-name">Thalassemia</td>
+                                        <td class="parameter-value">
+                                            {% set thal_types = ['Normal', 'Fixed Defect', 'Reversible Defect', 'Reversible Defect'] %}
+                                            {{ thal_types[patient_data.thal | int] }}
+                                        </td>
+                                        <td>Normal</td>
+                                        <td>
+                                            {% if patient_data.thal == '0' %}
+                                                <span class="badge bg-success">Normal</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">Defect</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Medical Recommendations -->
+        <div class="row mt-5">
+            <div class="col-lg-10 mx-auto">
+                <div class="recommendation-card">
+                    <h4 class="mb-3" style="color: var(--primary-color);">
+                        <i class="fas fa-user-md me-2"></i>
+                        Medical Recommendations
+                    </h4>
+                    
+                    {% if prediction_results.risk_level == 'High' %}
+                        <div class="alert alert-danger">
+                            <h5><i class="fas fa-exclamation-triangle me-2"></i>Immediate Action Required</h5>
+                            <ul class="mb-0">
+                                <li>Schedule an appointment with a cardiologist within 24-48 hours</li>
+                                <li>Consider emergency consultation if experiencing chest pain</li>
+                                <li>Avoid strenuous physical activity until medical clearance</li>
+                                <li>Monitor blood pressure and heart rate regularly</li>
+                            </ul>
+                        </div>
+                    {% elif prediction_results.risk_level == 'Moderate' %}
+                        <div class="alert alert-warning">
+                            <h5><i class="fas fa-exclamation-circle me-2"></i>Regular Monitoring Recommended</h5>
+                            <ul class="mb-0">
+                                <li>Schedule follow-up with physician within 2 weeks</li>
+                                <li>Implement lifestyle modifications (diet, exercise)</li>
+                                <li>Regular blood pressure and cholesterol monitoring</li>
+                                <li>Consider stress management techniques</li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-success">
+                            <h5><i class="fas fa-check-circle me-2"></i>Continue Healthy Practices</h5>
+                            <ul class="mb-0">
+                                <li>Maintain current healthy lifestyle</li>
+                                <li>Annual cardiovascular check-ups recommended</li>
+                                <li>Continue regular exercise and balanced diet</li>
+                                <li>Monitor for any new symptoms</li>
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="row mt-4">
+            <div class="col-lg-10 mx-auto">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle me-2"></i>Important Medical Disclaimer</h6>
+                    <p class="mb-0 small">
+                        This assessment is for educational and informational purposes only. It should not be used as a substitute 
+                        for professional medical advice, diagnosis, or treatment. Always consult with a qualified healthcare 
+                        provider for medical concerns and before making any medical decisions.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Set current date
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        // Add smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
