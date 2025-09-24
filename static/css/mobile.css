@@ -1,0 +1,71 @@
+/* Mobile-First Responsive Styles for CardioPredict */
+
+/* Base Mobile Styles */
+@media (max-width: 767px) {
+    /* Typography */
+    h1 { font-size: 1.5rem !important; }
+    h2 { font-size: 1.3rem !important; }
+    h3 { font-size: 1.2rem !important; }
+    h4 { font-size: 1.1rem !important; }
+    h5 { font-size: 1rem !important; }
+    
+    /* Spacing */
+    .container { padding: 0 0.75rem !important; }
+    .my-5 { margin: 2rem 0 !important; }
+    .my-4 { margin: 1.5rem 0 !important; }
+    .p-4 { padding: 1rem !important; }
+    
+    /* Cards */
+    .card { 
+        margin: 0.5rem 0 !important;
+        border-radius: 10px !important;
+    }
+    
+    /* Buttons */
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .btn-lg {
+        padding: 12px 20px !important;
+        font-size: 1rem !important;
+    }
+    
+    /* Forms */
+    .form-control, .form-select {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+    }
+    
+    /* Hide desktop elements */
+    .d-md-block { display: none !important; }
+}
+
+/* Small Mobile Devices */
+@media (max-width: 480px) {
+    /* Extra small spacing */
+    .container { padding: 0 0.5rem !important; }
+    
+    /* Smaller cards */
+    .card-body { padding: 1rem !important; }
+    
+    /* Stack columns */
+    .row > [class*="col-"] {
+        margin-bottom: 1rem;
+    }
+    
+    /* Smaller icons */
+    .medical-icon { font-size: 2rem !important; }
+    .logo-icon { font-size: 2.5rem !important; }
+}
+
+/* Touch-friendly interactions */
+@media (hover: none) and (pointer: coarse) {
+    .btn, .form-control, .form-select {
+        min-height: 44px; /* Apple's recommended touch target */
+    }
+    
+    .card:hover {
+        transform: none; /* Disable hover effects on touch */
+    }
+}
