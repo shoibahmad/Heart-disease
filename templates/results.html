@@ -164,7 +164,7 @@
         }
 
         .timestamp {
-            color: #6c757d;
+            color: #ffffff;
             font-size: 0.9rem;
         }
 
@@ -243,7 +243,7 @@
                     <div class="risk-indicator pulse" style="background-color: {{ prediction_results.risk_color }};">
                         <span>{{ (prediction_results.probability * 100) | round }}%</span>
                     </div>
-                    <h2 class="mb-3" style="color: {{ prediction_results.risk_color }};">
+                    <h2 class="mb-3" style="color: {{ prediction_results.risk_color }};
                         {{ prediction_results.risk_level }} Risk Level
                     </h2>
                     <p class="lead mb-4">{{ prediction_results.message }}</p>

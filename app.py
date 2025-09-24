@@ -2,9 +2,8 @@ from flask import Flask, request, jsonify, render_template, session
 from flask_cors import CORS
 import pandas as pd
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score
 import pickle
 import os
@@ -12,44 +11,42 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# Global model and scaler variables
+# Global model variable
 model = None
-scaler = None
 
 def load_and_train_model():
-    """Load data and train the model with improved accuracy"""
-    global model, scaler
+    """Load data and train the model"""
+    global model
     
     try:
-        # Load the heart disease dataset
-        heart_data = pd.read_csv('heart.csv')
+        # Try to load pre-trained model first
+        if os.path.exists('heart_disease_model.pkl'):
+            with open('heart_disease_model.pkl', 'rb') as f:
+                model = pickle.load(f)
+            print("Pre-trained model loaded successfully")
+            return model
         
-        # Remove any incomplete rows
+        # If no pre-trained model, train new one
+        heart_data = pd.read_csv('heart.csv')
         heart_data = heart_data.dropna()
         
-        # Prepare features and target
         X = heart_data.drop(columns='target', axis=1)
         Y = heart_data['target']
         
-        # Split the data
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, stratify=Y, random_state=42)
+        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, stratify=Y, random_state=2)
         
-        # Scale the features for better performance
-        scaler = StandardScaler()
-        X_train_scaled = scaler.fit_transform(X_train)
-        X_test_scaled = scaler.transform(X_test)
+        model = LogisticRegression(max_iter=1000)
+        model.fit(X_train, Y_train)
         
-        # Train the model with Random Forest for better accuracy
-        model = RandomForestClassifier(n_estimators=100, random_state=42, max_depth=10)
-        model.fit(X_train_scaled, Y_train)
+        train_accuracy = accuracy_score(Y_train, model.predict(X_train))
+        test_accuracy = accuracy_score(Y_test, model.predict(X_test))
         
-        # Calculate accuracy
-        train_accuracy = accuracy_score(Y_train, model.predict(X_train_scaled))
-        test_accuracy = accuracy_score(Y_test, model.predict(X_test_scaled))
+        print(f"Model trained: Train={train_accuracy:.3f}, Test={test_accuracy:.3f}")
         
-        print(f"Model trained successfully with {len(heart_data)} samples")
-        print(f"Training accuracy: {train_accuracy:.3f}")
-        print(f"Testing accuracy: {test_accuracy:.3f}")
+        # Save the model
+        with open('heart_disease_model.pkl', 'wb') as f:
+            pickle.dump(model, f)
+        
         return model
         
     except Exception as e:
@@ -104,12 +101,9 @@ def predict():
         
         input_df = pd.DataFrame([features], columns=feature_names)
         
-        # Scale the input features
-        input_scaled = scaler.transform(input_df)
-        
-        # Make prediction
-        prediction = model.predict(input_scaled)[0]
-        probability = model.predict_proba(input_scaled)[0][1]
+        # Make prediction (no scaling needed for LogisticRegression)
+        prediction = model.predict(input_df)[0]
+        probability = model.predict_proba(input_df)[0][1]
         
         # Determine risk level
         if probability >= 0.7:
@@ -156,12 +150,18 @@ def results():
                          prediction_results=prediction_results)
 
 if __name__ == '__main__':
+    import os
+    
     # Set secret key for sessions
-    app.secret_key = 'cardiopredict_secret_key_2024'
+    app.secret_key = os.environ.get('SECRET_KEY', 'cardiopredict_secret_key_2024')
     
     # Load and train the model on startup
     print("Loading and training model...")
     load_and_train_model()
     print("Model ready!")
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Production configuration
+    port = int(os.environ.get('PORT', 5000))
+    debug = os.environ.get('FLASK_ENV') != 'production'
+    
+    app.run(debug=debug, host='0.0.0.0', port=port)
