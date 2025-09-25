@@ -1,0 +1,28 @@
+{
+  "name": "CardioPredict",
+  "description": "AI-powered Heart Disease Risk Assessment System",
+  "repository": "https://github.com/yourusername/cardiopredict",
+  "logo": "https://cdn-icons-png.flaticon.com/512/2382/2382533.png",
+  "keywords": ["flask", "machine-learning", "healthcare", "heart-disease"],
+  "env": {
+    "SECRET_KEY": {
+      "description": "A secret key for Flask sessions",
+      "generator": "secret"
+    },
+    "FLASK_ENV": {
+      "description": "Flask environment",
+      "value": "production"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1
+    }
+  },
+  "addons": [],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]
+}

@@ -3,7 +3,8 @@ echo CardioPredict Quick Deploy
 echo ============================
 
 echo Installing dependencies...
-pip install --only-binary=all numpy pandas scikit-learn Flask Flask-CORS
+pip install --upgrade pip
+pip install -r requirements.txt
 
 echo Training model...
 python train_model.py
